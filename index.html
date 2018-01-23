@@ -12,6 +12,7 @@ Fourier
 <button onclick="img.src='circle.png'">Circle</button>
 <button onclick="img.src='square.png'">Square</button>
 <button onclick="img.src='cube.png'">Cube</button>
+<button onclick="img.src='star.png'">Star</button>
 <button onclick="img.src='spiral.png'">Spiral</button>
 <script>
 function miniFFT(re, im) {
@@ -27,16 +28,19 @@ function miniFFT(re, im) {
   for(hN = 1; hN * 2 <= N; hN *= 2){
     for (i = 0; i < N; i += hN * 2){
       for (j = i; j < i + hN; j++) {
-        cos = Math.cos(Math.PI * (j - i) / hN),
-          sin = Math.sin(Math.PI * (j - i) / hN)
-        tre =  re[j+hN] * cos + im[j+hN] * sin,
-          tim = -re[j+hN] * sin + im[j+hN] * cos;
-        re[j + hN] = re[j] - tre; im[j + hN] = im[j] - tim;
-        re[j] += tre; im[j] += tim;
+        cos = Math.cos(Math.PI * (j - i) / hN);
+        sin = Math.sin(Math.PI * (j - i) / hN);
+        tre =  re[j+hN] * cos + im[j+hN] * sin;
+        tim = -re[j+hN] * sin + im[j+hN] * cos;
+        re[j + hN] = re[j] - tre;
+        im[j + hN] = im[j] - tim;
+        re[j] += tre;
+        im[j] += tim;
       }
     }
   }
 }
+
 img.onload = () => {
   S = canvas0.width = canvas0.height = canvas1.width = canvas1.height = img.naturalWidth;
   x0 = canvas0.getContext("2d");

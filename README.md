@@ -1,10 +1,17 @@
 miniFourier
 ==
 
-A tiny Fourier transform and untransform for images
+A tiny 2D FFT and IFFT
 
-based on https://github.com/turbomaze/JS-Fourier-Image-Analysis by Turbomaze
+Demo:
 
-Demo: http://xem.github.io/miniFourier
+- Unminified (2074b): http://xem.github.io/miniFourier
+- Minified + golfed (1124b): http://xem.github.io/miniFourier/index.min.html
 
-Minified: http://xem.github.io/miniFourier/index.min.html
+Useful links:
+
+- https://antimatter15.com/2015/05/cooley-tukey-fft-dct-idct-in-under-1k-of-javascript/
+- https://gist.github.com/wrayal/995571
+- https://stackoverflow.com/a/11333566
+- https://github.com/turbomaze/JS-Fourier-Image-Analysis by Turbomaze
+- https://codepen.io/veubeke/pen/LbVZgv by Veubeke

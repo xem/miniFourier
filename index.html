@@ -7,7 +7,12 @@ Original image
 <td>
 Fourier
 <br>
-<canvas id="canvas1" style=width:45vw>
+<canvas id="canvas1" style=width:45vw></canvas>
+</table>
+<button onclick="img.src='circle.png'">Circle</button>
+<button onclick="img.src='square.png'">Square</button>
+<button onclick="img.src='cube.png'">Cube</button>
+<button onclick="img.src='spiral.png'">Spiral</button>
 <script>
 function miniFFT(re, im) {
   N = re.length;
@@ -32,7 +37,7 @@ function miniFFT(re, im) {
     }
   }
 }
-onload = () => {
+img.onload = () => {
   S = canvas0.width = canvas0.height = canvas1.width = canvas1.height = img.naturalWidth;
   x0 = canvas0.getContext("2d");
   x1 = canvas1.getContext("2d");

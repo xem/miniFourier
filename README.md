@@ -1,7 +1,7 @@
 miniFourier
 ==
 
-A tiny 2D FFT and IFFT
+A tiny 2D FFT plotter
 
 Demo:
 
@@ -15,3 +15,4 @@ Useful links:
 - https://stackoverflow.com/a/11333566
 - https://github.com/turbomaze/JS-Fourier-Image-Analysis by Turbomaze
 - https://codepen.io/veubeke/pen/LbVZgv by Veubeke
+- https://github.com/justecorruptio/golf/blob/master/fourier.html tiniest FFT plotter by Corruptio

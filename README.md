@@ -5,7 +5,7 @@ A tiny 2D FFT plotter
 
 Demo:
 
-- Unminified (2074b): http://xem.github.io/miniFourier
+- Commented: http://xem.github.io/miniFourier
 - Minified + golfed (1124b): http://xem.github.io/miniFourier/index.min.html
 
 Useful links:

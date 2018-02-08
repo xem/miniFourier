@@ -26,7 +26,7 @@ N = 256;
 // When this function is called on a line of pixels, re is the greyscale value of each pixel (values 0-255) and im is an array of zeros.
 // This non-recursive implementation was optimized by Kevin Kwok. Thanks to him!
 
-function miniFFT(re, im) {
+function miniFFT(re, im){
   for (i = 0; i < N; i++) {
     for(j = 0, h = i, k = N; k >>= 1; h >>= 1){
       j = (j << 1) | (h & 1);
@@ -195,7 +195,7 @@ fft2d = function(){
       d2.data[t2 + 3] =
       d2.data[t3 + 3] =
       d2.data[t4 + 3] =
-      255;
+      N;
     }
   }
   
@@ -208,16 +208,16 @@ fft2d = function(){
 
 // =======
 
-// Draw the UI
+// Draw the UI.
 b.style.padding = "1em";
-d.write("<table><td width=262>Draw here<td>FFT</table><canvas id=a width=522 height=256></canvas><p>round<input type=radio name=rs id=rs checked> square <input type=radio name=rs><p>size <input type=range size=1 min=1 max=20 value=10 id=w><p><button onclick=a.width^=0;c.fillStyle='#000';c.fillRect(0,0,256,256);c.fillRect(266,0,256,256)>clear");
+d.write("<table><td width=262>Draw here<td>FFT</table><canvas id=a width=522 height=256></canvas><p>round<input type=radio name=rs id=rs checked> square <input type=radio name=rs><p>size <input type=range size=1 min=1 max=20 value=10 id=w><p><button onclick=a.width^=0;c.fillStyle='#000';c.fillRect(0,0,256,256);fft2d()>clear");
 
 // =======
 
-// Init the canvas
+// Init the canvas.
 c = a.getContext("2d");
 
-// Draw the image and FFT
+// Draw the image and FFT.
 c.fillRect(0, 0, 256, 256);
 c.fillStyle = "#fff";
 c.fillRect(118, 118, 20, 20);
@@ -227,52 +227,47 @@ fft2d();
 
 // Inputs
 
-// Reset mouse coordinates
+// Reset mouse coordinates.
 x = y = 0;
 
-// Click a mouse button
+// Click a mouse button.
 a.onmousedown = function(e){
   
-  // Set line width
+  // Set line width.
   c.lineWidth = +w.value;
   
-  // Set line cap
+  // Set line cap.
   c.lineCap = rs.checked ? "round" : "square";
   
-  // Left click = white, right click = black
-  c.strokeStyle = [,"#fff",,"#000"][e.which];
+  // Left click = white, right click = black.
+  c.strokeStyle = "#fff";
   
-  // Draw a small line to make something appear on screen already
+  // Draw a small line to make something appear on screen already.
   c.beginPath();
   c.moveTo(x = e.pageX - 14, y = e.pageY - 36);
   c.lineTo(x + 1, y);
   c.stroke();
   
-  // Compute FFT2D
+  // Compute FFT2D.
   fft2d();
 }
 
-// Move mouse 
+// Move mouse.
 a.onmousemove = function(e){
   if(x){
     
-    // Draw a line between last x/y and new x/y
+    // Draw a line between last x/y and new x/y.
     c.moveTo(x, y);
     c.lineTo(x = e.pageX - 14, y = e.pageY - 36);
     c.stroke();
     
-    // Compute FFT2D
+    // Compute FFT2D.
     fft2d();
   }
 }
 
-// Reset x/y on mouse release
+// Reset x/y on mouse release.
 a.onmouseup = function(e){
   x = y = 0;
-}
-
-// Avoid opening context menu on right click
-a.oncontextmenu = function(e){
-  e.preventDefault();
 }
 </script>

@@ -1,0 +1,182 @@
+﻿<table>
+  <td>
+    Original image<br><canvas id=canvas0 width=256 height=256 style=width:40vw></canvas>
+  <td>
+    Fourier<br><canvas id=canvas1 width=256 height=256 style=width:40vw></canvas>
+</table>
+
+<button onclick="img.src='circle.png'">Circle</button>
+<button onclick="img.src='square.png'">Square</button>
+<button onclick="img.src='cube.png'">Cube</button>
+<button onclick="img.src='star.png'">Star</button>
+<button onclick="img.src='spiral.png'">Spiral</button>
+
+<img src=circle.png width=1 id=img>
+
+<script>
+
+// =======
+// MiniFFT
+// =======
+
+// The following code performs a 2D FFT of a square image (the image size in pixels must be a power of 2), and plots it using a logarithmic scale.
+// The image is chosen by clicking one of the buttons, that sets the src of a hidden <img> tag called img.
+// When the image is loaded, img.onload() is called, and the FFT is computed and plotted.
+
+// To compute a 2D FFT, we have to perform a 1D FFT on each line of the image, then consider the resulting FFTs as a grid, and perform a 1D FFT every column of that grid.
+// For example, for a 256 x 256 px image, 512 1D FFTs should be computed.
+// In practice, all the FFTs are symmetrical, so it's possible to compute only a half of them and mirror the result.
+
+// This function computes a 1D FFT for a group of 2^N complex numbers.
+// re represents the real part of each number, and im their imaginary part.
+// It's a JS port of the Cooley-Tukey radix-2 decimation-in-time algorithm.
+// When it's called on a line of pixels, re is the greyscale value of each pixel (values 0-255) and im is an array of zeros.
+
+function miniFFT(re, im) {
+  N = re.length;
+  for (i = 0; i < N; i++) {
+    for(j = 0, h = i, k = N; k >>= 1; h >>= 1){
+      j = (j << 1) | (h & 1);
+    }
+    if (j > i) {
+      re[j] = [re[i], re[i] = re[j]][0]
+      im[j] = [im[i], im[i] = im[j]][0]
+    }
+  }
+  for(hN = 1; hN * 2 <= N; hN *= 2){
+    for (i = 0; i < N; i += hN * 2){
+      for (j = i; j < i + hN; j++){
+        pi = 3.14 * (j - i) / hN;
+        cos = Math.cos(pi);
+        sin = Math.sin(pi);
+        tre =  re[j+hN] * cos + im[j+hN] * sin;
+        tim = -re[j+hN] * sin + im[j+hN] * cos;
+        re[j + hN] = re[j] - tre;
+        im[j + hN] = im[j] - tim;
+        re[j] += tre;
+        im[j] += tim;
+      }
+    }
+  }
+}
+
+// Get canvas contexts
+x0 = canvas0.getContext("2d");
+x1 = canvas1.getContext("2d");
+
+// 2D FFT computation and plotting:
+img.onload = () => {
+
+// Here's a schematic of the operations that are done for a 4 x 4 px image. (the principle is applicable for any other size )
+// Each pixel is written as a letter (ex: A), each complex number of its 1D FFT is written as a digit (ex: re1, im1)
+// Each final FFT pixel is written as a letter', and the complex numbers it represents is written as a digit'. 
+// There are only 8 different complex numbers, and only 4 different FFT pixels due to FFT's symmetries.
+
+// Original image                        "horizontal" 1D FFTs                                                                 "vertical' 1D FFTs                                              2D FFT
+// -----------                                                                                                                                                                             -------------
+// | A B C D | => miniFFT([A,B,C,D],[0,0,0,0]) = ([re1,re2,re2,re1],[im1,im2,im2,im1]) => miniFFT([re1,re3,re5,re7],[im1,im3,im5,im7]) = ([re1',re3',re3',re1'],[re1',re3',re3',re1']) =>  |A' B' B' A'|
+// | E F G H | => miniFFT([E,F,G,H],[0,0,0,0]) = ([re3,re4,re4,re3],[im3,im4,im4,im3]) => miniFFT([re2,re4,re6,re8],[im2,im4,im6,im8]) = ([re2',re4',re4',re2'],[re2',re4',re4',re2']) =>  |C' D' D' C'|
+// | I J K L | => miniFFT([I,J,K,L],[0,0,0,0]) = ([re5,re6,re6,re5],[im5,im6,im6,im4]) => miniFFT([re2,re4,re6,re8],[im2,im4,im6,im8]) = ([re2',re4',re4',re2'],[re2',re4',re4',re2']) =>  |C' D' D' C'|
+// | M N O P | => miniFFT([M,N,O,P],[0,0,0,0]) = ([re7,re8,re8,re7],[im7,im8,im8,im7]) => miniFFT([re1,re3,re5,re7],[im1,im3,im5,im7]) = ([re1',re3',re3',re1'],[re1',re3',re3',re1']) =>  |A' B' B' A'|
+// -----------                                                                                                                                                                             -------------
+
+  // Start chrono
+  D = new Date();
+  
+  // Reset & resize canvases
+  S = canvas0.width = canvas0.height = canvas1.width = canvas1.height = 256; //img.naturalWidth;
+
+  // Draw image
+  x0.drawImage(img, 0, 0, 256, 256);
+  
+  // Get image pixels
+  d = x0.getImageData(0, 0, S, S).data;
+  
+  // Create S x S 2D arrays for real parts and imaginary parts of complex numbers
+  re = [];
+  im = [];
+  fft = [];
+  max = 0;
+  
+  for(I = 0; I < S; I++){
+    re[I] = [];
+    im[I] = [];
+    
+    for(J = 0; J < S; J++){
+      
+      // Fill the real part with the pixels greyscale value
+      re[I][J] = (d[(I*S+J)*4] + d[(I*S+J)*4+1] + d[(I*S+J)*4+2]) / 3;
+      
+      // Fill the imaginary part with 0
+      im[I][J] = 0;
+    }
+    
+    // Call miniFFT on each line
+    miniFFT(re[I], im[I]);
+  }
+  
+  // Create S/2 x S/2 2D arrays for complex numbers.
+  // We compute only a half of the columns and then mirror the result.
+  re2 = [];
+  im2 = [];
+  
+  for(I = 0; I < S / 2; I++){
+  
+    re2[I] = re2[S - I] = [];
+    im2[I] = im2[S - I] = [];
+    
+    for(J = 0; J < S; J++){
+      
+      // Fill the array with the columns of re and im
+      re2[I][J] = re[J][I];
+      im2[I][J] = im[J][I];
+    }
+    
+    // Call miniFFT on each column of re and im, compute the modulus of each complex number, and remember the max value found.
+    miniFFT(re2[I], im2[I]);
+    fft[I] =
+    fft[S - I] = [];
+    
+    for(J = 0; J < S; J++){
+      fft[I][J] = Math.hypot(re2[I][J], im2[I][J]);
+      max = Math.max(max, fft[I][J]);
+    }
+  }
+  
+  // Compute the log of the max value
+  logmax = Math.log(max);
+  
+  // Create a new image
+  d2 = new ImageData(S, S);
+  
+  // Draw each pixel of the 2D fft divided by the log of the max value.
+  // Draw the symmetries too.
+  for(I = 0; I < S / 2; I++){
+  
+    for(J = 0; J < S / 2; J++){
+    
+      t1 = (I * S + J) * 4;
+      t2 = (I * S + S - J - 1) * 4;
+      t3 = ((S - I - 1) * S + J) * 4;
+      t4 = ((S - I - 1) * S + S - J - 1) * 4;
+    
+      if(fft[S / 2 - I])
+      d2.data[t1] = d2.data[t1 + 1] = d2.data[t1 + 2] = 
+      d2.data[t2] = d2.data[t2 + 1] = d2.data[t2 + 2] = 
+      d2.data[t3] = d2.data[t3 + 1] = d2.data[t3 + 2] = 
+      d2.data[t4] = d2.data[t4 + 1] = d2.data[t4 + 2] = 
+      fft[S / 2 - I][S / 2 - J] / logmax;
+      
+      d2.data[t1 + 3] =
+      d2.data[t2 + 3] =
+      d2.data[t3 + 3] =
+      d2.data[t4 + 3] =
+      255;
+    }
+  }
+  x1.putImageData(d2, 0, 0);
+  
+  // Stop chrono
+  console.log(new Date() - D + "ms");
+}
+</script>

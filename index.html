@@ -27,13 +27,14 @@ N = 256;
 // This non-recursive implementation was optimized by Kevin Kwok. Thanks to him!
 
 function miniFFT(re, im){
-  for (i = 0; i < N; i++) {
+  for (i = 0; i < N; i++){
     for(j = 0, h = i, k = N; k >>= 1; h >>= 1){
       j = (j << 1) | (h & 1);
     }
-    if (j > i) {
-      re[j] = [re[i], re[i] = re[j]][0]
-      im[j] = [im[i], im[i] = im[j]][0]
+    if (j > i){
+      //re[j] = [re[i], re[i] = re[j]][0]
+      //im[j] = [im[i], im[i] = im[j]][0]
+      [re[j], re[i], im[j], im[i]] = [re[i], re[j], im[i], im[j]];
     }
   }
   for(hN = 1; hN * 2 <= N; hN *= 2){
@@ -107,7 +108,8 @@ fft2d = function(){
   // D = new Date();
   
   // Get the source image pixels.
-  d = c.getImageData(0, 0, N, N).data;
+  Z = c.getImageData(0, 0, N, N);
+  d = Z.data;
   
   // Create three 256 x 256 2D arrays for real parts and imaginary parts and modulus of our complex numbers.
   re = [];
@@ -171,7 +173,7 @@ fft2d = function(){
   logmax = Math.log(max);
   
   // Create a new image.
-  d2 = new ImageData(N, N);
+  //d2 = new ImageData(N, N);
   
   // Draw each pixel of the 2D FFT divided by the log of the max value.
   // Draw the four symmetries too.
@@ -185,21 +187,21 @@ fft2d = function(){
       t4 = ((N - I - 1) * N + N - J - 1) * 4;
     
       if(fft[N / 2 - I])
-      d2.data[t1] = d2.data[t1 + 1] = d2.data[t1 + 2] = 
-      d2.data[t2] = d2.data[t2 + 1] = d2.data[t2 + 2] = 
-      d2.data[t3] = d2.data[t3 + 1] = d2.data[t3 + 2] = 
-      d2.data[t4] = d2.data[t4 + 1] = d2.data[t4 + 2] = 
+      d[t1] = d[t1 + 1] = d[t1 + 2] = 
+      d[t2] = d[t2 + 1] = d[t2 + 2] = 
+      d[t3] = d[t3 + 1] = d[t3 + 2] = 
+      d[t4] = d[t4 + 1] = d[t4 + 2] = 
       fft[N / 2 - I][N / 2 - J] / logmax;
       
-      d2.data[t1 + 3] =
-      d2.data[t2 + 3] =
-      d2.data[t3 + 3] =
-      d2.data[t4 + 3] =
+      d[t1 + 3] =
+      d[t2 + 3] =
+      d[t3 + 3] =
+      d[t4 + 3] =
       N;
     }
   }
   
-  c.putImageData(d2, 266, 0);
+  c.putImageData(Z, 266, 0);
   
   // Debug: stop chrono
   // console.log(new Date() - D + "ms");
@@ -210,7 +212,7 @@ fft2d = function(){
 
 // Draw the UI.
 b.style.padding = "1em";
-d.write("<table><td width=262>Draw here<td>FFT</table><canvas id=a width=522 height=256></canvas><p>round<input type=radio name=rs id=rs checked> square <input type=radio name=rs><p>size <input type=range size=1 min=1 max=20 value=10 id=w><p><button onclick=a.width^=0;c.fillStyle='#000';c.fillRect(0,0,256,256);fft2d()>clear");
+d.write("<table><td width=262>Draw here<td>FFT</table><canvas id=a width=522 height=256></canvas><p>round<input type=radio name=rs id=rs checked> square <input type=radio name=rs><p>size <input type=range size=1 min=1 max=20 value=10 id=w><p><input type=reset onmouseup=c.fillStyle='#000';c.fillRect(0,0,N,N);fft2d()>");
 
 // =======
 
@@ -218,7 +220,7 @@ d.write("<table><td width=262>Draw here<td>FFT</table><canvas id=a width=522 hei
 c = a.getContext("2d");
 
 // Draw the image and FFT.
-c.fillRect(0, 0, 256, 256);
+c.fillRect(0, 0, N, N);
 c.fillStyle = "#fff";
 c.fillRect(118, 118, 20, 20);
 fft2d();

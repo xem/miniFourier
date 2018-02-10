@@ -1,39 +1,51 @@
 ﻿<body id=b style=margin:0>
+<canvas id=a width=522 height=256></canvas>
 <script>
+c = a.getContext`2d`;
 d = document;
+b = d.body;
 
 // MiniFFT
 // =======
 
+// By xem
+// With the great help of @BalintCsala, @Subzey and Kevin Kwok.
+
 // This demo computes a 2D FFT of a 256 x 256px image, and plots it using a logarithmic scale.
-// The user can use the mouse and controls to edit the image, and recompute its FFT.
+// The user can use the mouse, keyboard and UI to edit the image.
 
 // To compute a 2D FFT, we have to perform a 1D FFT on each line of the image,
 // then consider the resulting 1D FFTs as a grid,
 // and finally, perform a new 1D FFT every column of that grid.
-
-// For a 256 x 256px image, 512 1D FFTs should be computed, in theory.
+// So, for a 256 x 256px image, 512 1D FFTs should be computed, in theory.
 // In practice, all the FFTs are symmetrical, so it's possible to compute only a half of them and mirror the result.
+// Mirroring the FFTs takes more code but makes the rendering much faster, which is needed in this demo.
 
-// 256 is used many times  in the demo, so we store it in N
+// 256 is used many times in the demo, so we store it in N
 N = 256;
+
+// =======
+
+// UI added below the canvas (a range input called x and a reset button).
+// The reset button draws a black image and recomputes its FFT.
+d.write`<p><input type=range value=9 id=x><input type=reset onmouseup=c.fillStyle='#000';c.fillRect(0,0,N,N);fft2d()>`;
 
 // =======
 
 // The miniFFT function computes a 1D FFT for a group of 2^N complex numbers.
 // The arrays re represent the real parts and imaginary parts of these numbers.
 // It's a JS port of the Cooley-Tukey radix-2 decimation-in-time algorithm.
-// When this function is called on a line of pixels, re is the greyscale value of each pixel (values 0-255) and im is an array of zeros.
-// This non-recursive implementation was optimized by Kevin Kwok. Thanks to him!
-
+// When this function is called on a line of pixels,
+// re is the greyscale value of each pixel (values 0-255) and im is an array of zeros.
+// This non-recursive implementation was optimized by Kevin Kwok.
+// https://antimatter15.com/2015/05/cooley-tukey-fft-dct-idct-in-under-1k-of-javascript/
+// We added ES6 destructuring and more intermediate vars to save bytes and gain time.
 function miniFFT(re, im){
   for (i = 0; i < N; i++){
     for(j = 0, h = i, k = N; k >>= 1; h >>= 1){
       j = (j << 1) | (h & 1);
     }
     if (j > i){
-      //re[j] = [re[i], re[i] = re[j]][0]
-      //im[j] = [im[i], im[i] = im[j]][0]
       [re[j], re[i], im[j], im[i]] = [re[i], re[j], im[i], im[j]];
     }
   }
@@ -100,12 +112,9 @@ function miniFFT(re, im){
 // And that's how we usually represent a 2D FFT.
 // Note: plotting complex numbers as greyscale pixels implies a loss of information,
 // so the resulting image can't be iFFT'd (inverse-FFT'd) back to the first image.
-// That's why I didn't make the right side of the canvas drawable.
+// That's why we didn't make the right side of the canvas drawable.
 
 fft2d = function(){
-
-  // Debug: start chrono.
-  // D = new Date();
   
   // Get the source image pixels.
   Z = c.getImageData(0, 0, N, N);
@@ -157,11 +166,13 @@ fft2d = function(){
     // Call miniFFT on each column of re and im.
     miniFFT(re2[I], im2[I]);
       
+    // Mirror the grid of complex numbers.
     fft[I] = fft[N - I] = [];
     
     for(J = 0; J < N; J++){
       
       // Compute the modulus of each complex number.
+      // Math.hypot works fine because the modulus of a complex number is sqrt(re² + im²)
       fft[I][J] = Math.hypot(re2[I][J], im2[I][J]);
       
       // Remember the max value found.
@@ -172,11 +183,8 @@ fft2d = function(){
   // Compute the log of the max value.
   logmax = Math.log(max);
   
-  // Create a new image.
-  //d2 = new ImageData(N, N);
-  
   // Draw each pixel of the 2D FFT divided by the log of the max value.
-  // Draw the four symmetries too.
+  // We draw the top-left quarter of the FFT and its four symmetries at the same time.
   for(I = 0; I < N / 2; I++){
   
     for(J = 0; J < N / 2; J++){
@@ -201,75 +209,91 @@ fft2d = function(){
     }
   }
   
-  c.putImageData(Z, 266, 0);
-  
-  // Debug: stop chrono
-  // console.log(new Date() - D + "ms");
+  c.putImageData(Z, N + 9, 0);
   
 }
 
 // =======
 
-// Draw the UI.
-b.style.padding = "1em";
-d.write("<table><td width=262>Draw here<td>FFT</table><canvas id=a width=522 height=256></canvas><p>round<input type=radio name=rs id=rs checked> square <input type=radio name=rs><p>size <input type=range size=1 min=1 max=20 value=10 id=w><p><input type=reset onmouseup=c.fillStyle='#000';c.fillRect(0,0,N,N);fft2d()>");
+// Built-in demo
 
-// =======
-
-// Init the canvas.
-c = a.getContext("2d");
-
-// Draw the image and FFT.
+// Draw a white square on a black background
 c.fillRect(0, 0, N, N);
-c.fillStyle = "#fff";
-c.fillRect(118, 118, 20, 20);
+c.fillStyle = '#fff';
+c.fillRect(120, 120, 16, 16);
+
+// Compute its FFT
 fft2d();
 
 // =======
 
 // Inputs
 
-// Reset mouse coordinates.
-x = y = 0;
+// Reset mouse coordinates (X, Y) and last mouse button pressed (F).
+X = Y = F = 0;
 
-// Click a mouse button.
-a.onmousedown = function(e){
-  
-  // Set line width.
-  c.lineWidth = +w.value;
-  
-  // Set line cap.
-  c.lineCap = rs.checked ? "round" : "square";
-  
-  // Left click = white, right click = black.
-  c.strokeStyle = "#fff";
-  
-  // Draw a small line to make something appear on screen already.
-  c.beginPath();
-  c.moveTo(x = e.pageX - 14, y = e.pageY - 36);
-  c.lineTo(x + 1, y);
-  c.stroke();
-  
-  // Compute FFT2D.
-  fft2d();
-}
+// The goal here is to allow drawing with the left click or the right click pressed,
+// using a single function, bound to onmousedown and onmousemove,
+// without using onmouseup to stop drawing.
+a.onmousedown = a.onmousemove = function(e, f){
 
-// Move mouse.
-a.onmousemove = function(e){
-  if(x){
+  // First, test if one mouse button is pressed
+  e.buttons
+  
+  // If a key button is pressed:
+  ?
+  
+  (
     
-    // Draw a line between last x/y and new x/y.
-    c.moveTo(x, y);
-    c.lineTo(x = e.pageX - 14, y = e.pageY - 36);
-    c.stroke();
+    // Set line width to the value of the range input + 1
+    // (because a line width of size 0 would draw nothing).
+    c.lineWidth = +x.value + 1,
     
-    // Compute FFT2D.
-    fft2d();
-  }
+    // Remember the new mouse button number (F) if it's not set.
+    F = F || e.which,
+    
+    // Press Alt to draw squares instead of rounds.
+    c.lineCap = e.altKey ? `square` : `round`,
+    
+    // Left click: draw in white, right click: draw in black.
+    c.strokeStyle = F < 3 ? '#fff' : '#000',
+    
+    // Draw a line from last saved X and Y to current X and Y + 1.
+    // (if we don't add 1 to X or Y, the 0px line would not appear on the canvas).
+    c.lineTo(X, Y),
+    c.lineTo(X = e.pageX, Y = e.pageY + 1),
+    
+    // Trace the line.
+    c.stroke(),
+    
+    // Compute the 2D FFT.
+    fft2d()
+  )
+  
+  // If no key button is pressed, nothing is drawn but:
+  :
+  (
+    // Start a new path on the canvas.
+    // This ensures that the next time a button is pressed, the line will be drawn on a new path,
+    // and won't affect the previous paths in case of shape/size/color modification.
+    c.beginPath(),
+    
+    // Save current X and Y.
+    X = e.pageX,
+    Y = e.pageY,
+    
+    // Reset F.
+    F = 0
+  )
+};
+
+// Disable context menu on right click, to allow drawing in black.
+oncontextmenu = function(e, f){
+  e.preventDefault()
 }
 
-// Reset x/y on mouse release.
-a.onmouseup = function(e){
-  x = y = 0;
-}
+
+// UI
+document.write("<p>&nbsp;Left click to draw in white, right click to draw in black, press Alt key to change the shape")
+
 </script>

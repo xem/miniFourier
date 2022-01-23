@@ -1,0 +1,53 @@
+﻿<h2>Mini FFT 1D</h1>
+
+<p><b>Input:</b>&nbsp; RE = <input size=25 id=RE1 value="[1,2,3,4]">, IM = <input size=25 id=IM1 value="[0,0,0,0]"> (arrays size must be a power of 2)
+<p><b>Outpt:</b> RE = <input size=25 id=RE2 readonly>, IM = <input size=25 id=IM2 readonly>
+<p><button id=ok>Compute</button>
+
+<script>
+
+
+// Golf starts here
+// =================
+
+FFT = _ => {
+  for (i = 0; i < N; i++){
+    for(j = 0, h = i, k = N; k >>= 1; h >>= 1){
+      j = (j << 1) | (h & 1);
+    }
+    if (j > i){
+      [re[j], re[i], im[j], im[i]] = [re[i], re[j], im[i], im[j]];
+    }
+  }
+  for(hN = 1; hN * 2 <= N; hN *= 2){
+    for (i = 0; i < N; i += hN * 2){
+      for (j = i; j < i + hN; j++){
+        pi = Math.PI * (j - i) / hN;
+        cos = Math.cos(pi);
+        sin = Math.sin(pi);
+        tre =  re[j + hN] * cos + im[j+hN] * sin;
+        tim = -re[j + hN] * sin + im[j+hN] * cos;
+        re[j + hN] = re[j] - tre;
+        im[j + hN] = im[j] - tim;
+        re[j] += tre;
+        im[j] += tim;
+      }
+    }
+  }
+}
+
+// Golf ends here
+// ==============
+
+ok.onclick = () => {
+
+  re = eval(RE1.value);
+  im = eval(IM1.value);
+  N = re.length;
+  
+  FFT();
+  
+  RE2.value = "[" + re.map(x=>x.toFixed(3)) + "]";
+  IM2.value = "[" + im.map(x=>x.toFixed(3)) + "]";
+}
+</script>

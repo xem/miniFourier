@@ -1,0 +1,35 @@
+﻿<h2>Mini DFT 1D</h1>
+
+<p><b>Input:</b>&nbsp; <input size=50 id=i1 value="[[1,0],[2,0],[3,0],[4,0]]">
+<p><b>Outpt:</b> <input size=50 id=i2 readonly>
+<p><button id=ok>Compute</button>
+
+<script>
+
+
+// Golf starts here
+// =================
+
+DFT = _ => {
+  O = [];
+  for (i in I) {
+    O[i] = [0, 0];
+    for (k in I)
+      O[i][0] += (I[k][0] * Math.cos(k * -2 * Math.PI * i / I.length) - I[k][1] * Math.sin(k * -2 * Math.PI * i / I.length)),
+      O[i][1] += (I[k][0] * Math.sin(k * -2 * Math.PI * i / I.length) + I[k][1] * Math.cos(k * -2 * Math.PI * i / I.length));
+  }
+}
+
+// Golf ends here
+// ==============
+
+ok.onclick = () => {
+
+  I = eval(i1.value);
+  
+  DFT();
+  
+  i2.value = JSON.stringify(O).replace(/(\d+\.\d+e?-?\d+)+/g,a=>(+a).toFixed(3));
+  
+}
+</script>

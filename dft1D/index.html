@@ -4,6 +4,11 @@
 <p><b>Outpt:</b> <input size=50 id=i2 readonly>
 <p><button id=ok>Compute</button>
 
+<br>
+<br>
+<br>
+<br>
+<a href="https://github.com/xem/miniFourier/tree/gh-pages/dft1D">Fork me on Github</a>
 <script>
 
 
@@ -29,7 +34,7 @@ ok.onclick = () => {
   
   DFT();
   
-  i2.value = JSON.stringify(O).replace(/(\d+\.\d+e?-?\d+)+/g,a=>(+a).toFixed(3));
+  i2.value = JSON.stringify(O).replace(/-?\d+\.?\d*e?-?\d*/g,a=>(+a).toFixed(3));
   
 }
 </script>

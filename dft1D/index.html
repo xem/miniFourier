@@ -15,15 +15,8 @@
 // Golf starts here
 // =================
 
-DFT = _ => {
-  O = [];
-  for (i in I) {
-    O[i] = [0, 0];
-    for (k in I)
-      O[i][0] += (I[k][0] * Math.cos(k * -2 * Math.PI * i / I.length) - I[k][1] * Math.sin(k * -2 * Math.PI * i / I.length)),
-      O[i][1] += (I[k][0] * Math.sin(k * -2 * Math.PI * i / I.length) + I[k][1] * Math.cos(k * -2 * Math.PI * i / I.length));
-  }
-}
+DFT=_=>{for(i in I)for(k in O[i]=[0,0],I)with(Math)P=-2*k*PI*i/N,K=I[k],O[i][0]+=K[0]*cos(P)-K[1]*sin(P),O[i][1]+=K[0]*sin(P)+K[1]*cos(P)}
+
 
 // Golf ends here
 // ==============
@@ -31,6 +24,8 @@ DFT = _ => {
 ok.onclick = () => {
 
   I = eval(i1.value);
+  O = [];
+  N = I.length;
   
   DFT();
   

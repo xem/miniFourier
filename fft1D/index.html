@@ -16,30 +16,7 @@
 // Golf starts here
 // =================
 
-FFT = _ => {
-  for (i in I){
-    for(j = 0, h = i, k = N; k >>= 1; h >>= 1){
-      j = (j << 1) | (h & 1);
-    }
-    if (j > i){
-      [I[i],I[j]] = [I[j],I[i]];
-    }
-  }
-  for(hN = 1; hN * 2 <= N; hN *= 2){
-    for (i = 0; i < N; i += hN * 2){
-      for (j = i; j < i + hN; j++){
-        pi = Math.PI * (j - i) / hN;
-        cos = Math.cos(pi);
-        sin = Math.sin(pi);
-        tre =  I[j + hN][0] * cos + I[j+hN][1] * sin;
-        tim = -I[j + hN][0] * sin + I[j+hN][1] * cos;
-        I[j + hN] = [I[j][0] - tre, I[j][1] - tim];
-        I[j][0] += tre;
-        I[j][1] += tim;
-      }
-    }
-  }
-}
+FFT=(F,h=F.length/2,t,a=[],o=[],M,T,f,n)=>{for(t=0;t<h;++t)a[t]=[F[2*t][0],F[2*t][1]],o[t]=[F[2*t+1][0],F[2*t+1][1]];for(h>1&&(FFT(a),FFT(o)),t=0;t<h;++t)M=-Math.PI*t/h,f=Math.cos(M),n=Math.sin(M),M=f*o[t][0]-n*o[t][1],T=f*o[t][1]+n*o[t][0],F[t]=[a[t][0]+M,a[t][1]+T],F[t+h]=[a[t][0]-M,a[t][1]-T]}
 
 // Golf ends here
 // ==============
@@ -47,9 +24,8 @@ FFT = _ => {
 ok.onclick = () => {
 
   I = eval(i1.value);
-  N = I.length;
   
-  FFT();
+  FFT(I);
   
   i2.value = JSON.stringify(I).replace(/-?\d+\.?\d*e?-?\d*/g,a=>(+a).toFixed(3));
   

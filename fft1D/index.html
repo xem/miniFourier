@@ -16,7 +16,8 @@
 // Golf starts here
 // =================
 
-FFT=(F,h=F.length/2,t,a=[],o=[],M,T,f,n)=>{for(t=0;t<h;++t)a[t]=[F[2*t][0],F[2*t][1]],o[t]=[F[2*t+1][0],F[2*t+1][1]];for(h>1&&(FFT(a),FFT(o)),t=0;t<h;++t)with(Math)M=-PI*t/h,n=sin(M),M=cos(M)*o[t][0]-n*o[t][1],T=cos(M)*o[t][1]+n*o[t][0],F[t]=[a[t][0]+M,a[t][1]+T],F[t+h]=[a[t][0]-M,a[t][1]-T]}
+FFT=(F,h=F.length/2,a=[],o=[],t,M,N,O)=>{for(t=h*2;t--;)(t%2?o:a).push(F[t]);h>1&&(FFT(a),FFT(o));for(t=h;t--;)with(Math)N=cos(M=-PI*t/h)*o[t][0]-sin(M)*o[t][1],O=cos(M)*o[t][1]+sin(M)*o[t][0],F[t]=[a[t][0]+N,a[t][1]+O],F[t+h]=[a[t][0]-N,a[t][1]-O]}
+
 
 // Golf ends here
 // ==============

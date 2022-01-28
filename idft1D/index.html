@@ -1,0 +1,27 @@
+﻿<tt><h2>Mini Inverse DFT 1D</h1>
+
+<p><b>Input:</b>&nbsp; <input size=50 id=i1 value="[[10.000,0.000],[-2.000,2.000],[-2.000,0.000],[-2.000,-2.000]]">
+<p><b>Output:</b> <input size=50 id=i2 readonly>
+<p><button id=ok>Compute</button>
+
+<script>
+
+
+// Golf starts here
+// =================
+
+IDFT=(I,L=I.length,O=[])=>{for(i in I)for(k in O[i]=[0,0],I)with(Math)P=2*k*PI*i/L,K=I[k],O[i][0]+=K[0]*cos(P)-K[1]*sin(P),O[i][1]+=K[0]*sin(P)+K[1]*cos(P);return O.map(a=>[a[0]/L,a[1]/L])}
+
+// Golf ends here
+// ==============
+
+ok.onclick = () => {
+
+  I = eval(i1.value);
+  
+  O = IDFT(I);
+  
+  i2.value = JSON.stringify(O).replace(/-?\d+\.?\d*e?-?\d*/g,a=>(+a).toFixed(3)).replace(/-0.000/g,"0.000");
+  
+}
+</script>

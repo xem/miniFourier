@@ -1,21 +1,16 @@
-﻿<h2>Mini DFT 1D</h1>
+﻿<tt><h2>Mini DFT 1D</h1>
 
 <p><b>Input:</b>&nbsp; <input size=50 id=i1 value="[[1,0],[2,0],[3,0],[4,0]]">
-<p><b>Outpt:</b> <input size=50 id=i2 readonly>
+<p><b>Output:</b> <input size=50 id=i2 readonly>
 <p><button id=ok>Compute</button>
 
-<br>
-<br>
-<br>
-<br>
-<a href="http://paulbourke.net/miscellaneous/dft/">Original source</a> - <a href="https://github.com/xem/miniFourier/tree/gh-pages/dft1D">Fork me on Github</a>
 <script>
 
 
 // Golf starts here
 // =================
 
-DFT=_=>{for(i in I)for(k in O[i]=[0,0],I)with(Math)P=-2*k*PI*i/N,K=I[k],O[i][0]+=K[0]*cos(P)-K[1]*sin(P),O[i][1]+=K[0]*sin(P)+K[1]*cos(P)}
+DFT=(I,L=I.length,O=[])=>{for(i in I)for(k in O[i]=[0,0],I)with(Math)P=-2*k*PI*i/L,K=I[k],O[i][0]+=K[0]*cos(P)-K[1]*sin(P),O[i][1]+=K[0]*sin(P)+K[1]*cos(P);return O}
 
 // Golf ends here
 // ==============
@@ -23,10 +18,8 @@ DFT=_=>{for(i in I)for(k in O[i]=[0,0],I)with(Math)P=-2*k*PI*i/N,K=I[k],O[i][0]+
 ok.onclick = () => {
 
   I = eval(i1.value);
-  O = [];
-  N = I.length;
   
-  DFT();
+  O = DFT(I);
   
   i2.value = JSON.stringify(O).replace(/-?\d+\.?\d*e?-?\d*/g,a=>(+a).toFixed(3));
   

@@ -11,7 +11,7 @@
 // Golf starts here
 // =================
 
-IFFT=(F,L=F.length,h=L/2,t,a=[],o=[],P,M,T)=>{for(t=L;t--;)(t&1?o:a)[t>>1]=F[t];for(h>1&&(IFFT(a),IFFT(o)),t=h;t--;)with(Math)M=cos(P=PI*t/h)*o[t][0]-sin(P)*o[t][1],T=cos(P)*o[t][1]+sin(P)*o[t][0],F[t]=[a[t][0]+M,a[t][1]+T],F[t+h]=[a[t][0]-M,a[t][1]-T];return F.map(a=>[a[0]/L,a[1]/L])}
+IFFT=(F,M,T,p,q,t,h=0,a=[],o=[],L=F.length)=>{for(((t=~t)?a:o)[h]of F)h+=!t;for(h>1&&IFFT(o,IFFT(a));t<h;[p,q]=a[t],F[t]=[p+M,q+T],F[t+++h]=[p-M,q-T])with(Math)[p,q]=o[t],M=cos(T=PI*t/h)*p-sin(T)*q,T=cos(T)*q+sin(T)*p;return F.map(a=>[a[0]/L,a[1]/L])}
 
 // Golf ends here
 // ==============

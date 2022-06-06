@@ -33,7 +33,7 @@ d.write`<p><input type=range value=9 id=x><input type=reset onmouseup=c.fillStyl
 // =======
 
 // The miniFFT function computes a 1D FFT for a group of 2^N complex numbers.
-// The arrays re represent the real parts and imaginary parts of these numbers.
+// The arrays re and im represent the real parts and imaginary parts of these numbers.
 // It's a JS port of the Cooley-Tukey radix-2 decimation-in-time algorithm.
 // When this function is called on a line of pixels,
 // re is the greyscale value of each pixel (values 0-255) and im is an array of zeros.
